@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Switchball</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    min-height:100vh;
+    padding:15px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    font-size:3rem;
+    color:#38bdf8;
+    margin-bottom:20px;
+    text-shadow:0 0 15px #38bdf8;
+}
+
+.roles{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.roleCard{
+    flex:1;
+    padding:15px;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.batterCard{
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+.pitcherCard{
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+}
+
+.scoreGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.playerCard{
+    background:white;
+    color:black;
+    border-radius:20px;
+    padding:20px;
+    text-align:center;
+}
+
+.playerName{
+    font-size:1.5rem;
+    font-weight:bold;
+}
+
+.score{
+    font-size:6rem;
+    font-weight:bold;
+    margin:10px 0;
+}
+
+.fouls{
+    font-size:1.2rem;
+}
+
+.progressBox{
+    margin-top:15px;
+    background:#0f172a;
+    border-radius:20px;
+    padding:20px;
+    text-align:center;
+}
+
+.progress{
+    width:100%;
+    height:20px;
+    background:#334155;
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.progressFill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#22c55e,#3b82f6);
+    transition:.3s;
+}
+
+.buttonGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:20px;
+}
+
+button{
+    border:none;
+    border-radius:15px;
+    padding:18px;
+    color:white;
+    font-size:1.1rem;
+    font-weight:bold;
+}
+
+.hit{background:#16a34a;}
+.strike{background:#dc2626;}
+.catch{background:#d97706;}
+.foulBtn{background:#9333ea;}
+.switchBtn{background:#2563eb;}
+.resetBtn{background:#475569;}
+
+.final{
+    margin-top:20px;
+    background:#0f172a;
+    padding:20px;
+    border-radius:20px;
+    text-align:center;
+    font-size:1.3rem;
+}
+
+input{
+    width:48%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    margin-bottom:15px;
+    text-align:center;
+    font-size:16px;
+}
+
+.winner{
+    margin-top:10px;
+    font-size:1.5rem;
+    color:#22c55e;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⚾ SWITCHBALL</h1>
+
+<div style="display:flex;justify-content:space-between;">
+<input id="player1Name" value="Player 1">
+<input id="player2Name" value="Player 2">
+</div>
+
+<div class="roles">
+<div class="roleCard batterCard" id="batterDisplay">
+Batter: Player 1
+</div>
+
+<div class="roleCard pitcherCard" id="pitcherDisplay">
+Pitcher: Player 2
+</div>
+</div>
+
+<div class="scoreGrid">
+
+<div class="playerCard">
+<div class="playerName" id="p1Name">Player 1</div>
+<div class="score" id="p1Score">0</div>
+<div class="fouls">Fouls: <span id="p1Fouls">0</span></div>
+</div>
+
+<div class="playerCard">
+<div class="playerName" id="p2Name">Player 2</div>
+<div class="score" id="p2Score">0</div>
+<div class="fouls">Fouls: <span id="p2Fouls">0</span></div>
+</div>
+
+</div>
+
+<div class="progressBox">
+
+<h2>Round Progress</h2>
+
+<div style="font-size:2rem;margin-top:10px;">
+<span id="roundPoints">0</span>/7
+</div>
+
+<div class="progress">
+<div class="progressFill" id="progressFill"></div>
+</div>
+
+</div>
+
+<div class="buttonGrid">
+
+<button class="hit" onclick="hit()">⚾ HIT</button>
+<button class="strike" onclick="strike()">🔥 STRIKE</button>
+
+<button class="catch" onclick="catchBall()">🧤 CATCH</button>
+<button class="foulBtn" onclick="foul()">❌ FOUL</button>
+
+<button class="switchBtn" onclick="switchRoles()">🔄 SWITCH</button>
+<button class="resetBtn" onclick="resetGame()">↺ RESET</button>
+
+</div>
+
+<div class="final">
+
+<div id="finalText">
+Final Score
+</div>
+
+<div class="winner" id="winnerText">
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let scores=[0,0];
+let fouls=[0,0];
+
+let batter=0;
+let pitcher=1;
+
+let roundPoints=0;
+
+function updateDisplay(){
+
+const p1=document.getElementById("player1Name").value || "Player 1";
+const p2=document.getElementById("player2Name").value || "Player 2";
+
+document.getElementById("p1Name").textContent=p1;
+document.getElementById("p2Name").textContent=p2;
+
+document.getElementById("p1Score").textContent=scores[0];
+document.getElementById("p2Score").textContent=scores[1];
+
+document.getElementById("p1Fouls").textContent=fouls[0];
+document.getElementById("p2Fouls").textContent=fouls[1];
+
+document.getElementById("roundPoints").textContent=roundPoints;
+
+document.getElementById("progressFill").style.width =
+(roundPoints/7*100)+"%";
+
+const batterName=batter===0?p1:p2;
+const pitcherName=pitcher===0?p1:p2;
+
+document.getElementById("batterDisplay").textContent=
+"🥎 Batter: "+batterName;
+
+document.getElementById("pitcherDisplay").textContent=
+"⚾ Pitcher: "+pitcherName;
+
+const final1=scores[0]-fouls[0];
+const final2=scores[1]-fouls[1];
+
+document.getElementById("finalText").innerHTML=
+`${p1}: ${final1} &nbsp; | &nbsp; ${p2}: ${final2}`;
+
+let winner="Tie Game";
+
+if(final1>final2) winner="🏆 "+p1+" leads";
+if(final2>final1) winner="🏆 "+p2+" leads";
+
+document.getElementById("winnerText").textContent=winner;
+}
+
+function addRoundPoint(){
+
+roundPoints++;
+
+if(roundPoints>=7){
+
+alert("7 points reached! Switching roles.");
+
+switchRoles();
+}
+}
+
+function hit(){
+scores[batter]++;
+addRoundPoint();
+updateDisplay();
+}
+
+function strike(){
+scores[pitcher]++;
+addRoundPoint();
+updateDisplay();
+}
+
+function catchBall(){
+scores[pitcher]++;
+addRoundPoint();
+updateDisplay();
+}
+
+function foul(){
+fouls[batter]++;
+updateDisplay();
+}
+
+function switchRoles(){
+
+[batter,pitcher]=[pitcher,batter];
+
+roundPoints=0;
+
+updateDisplay();
+}
+
+function resetGame(){
+
+scores=[0,0];
+fouls=[0,0];
+
+batter=0;
+pitcher=1;
+
+roundPoints=0;
+
+updateDisplay();
+}
+
+document.getElementById("player1Name").addEventListener("input",updateDisplay);
+document.getElementById("player2Name").addEventListener("input",updateDisplay);
+
+updateDisplay();
+
+</script>
+
+</body>
+</html>
